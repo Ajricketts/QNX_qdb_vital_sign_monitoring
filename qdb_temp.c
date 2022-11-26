@@ -8,7 +8,6 @@
 #include <sys/dispatch.h>
 #include <errno.h>
 #include <string.h>
-#include <qdb/qdb.h>
 #include <sqlite3.h>
 #include <time.h>
 

@@ -14,7 +14,7 @@ TARGET = -Vgcc_ntox86_64
 #TARGET = -Vgcc_ntoaarch64le
 
 
-CFLAGS += $(DEBUG) $(TARGET) -Wall -lqdb -lsqlite3
+CFLAGS += $(DEBUG) $(TARGET) -Wall -lsqlite3
 LDFLAGS+= $(DEBUG) $(TARGET)
 BINS = qdb_test qdb_temp qdb_respiration qdb_heartrate qdb_early_warning_score qdb_no_ews
 all: $(BINS)

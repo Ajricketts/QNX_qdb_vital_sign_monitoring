@@ -8,7 +8,6 @@
 #include <sys/dispatch.h>
 #include <errno.h>
 #include <string.h>
-#include <qdb/qdb.h>
 #include <sqlite3.h>
 #include <time.h>
 
@@ -25,6 +24,9 @@
 int coid;
 
 static int callback(void *NotUsed, int argc, char **argv, char **azColName) {
+	//print it
+	//printf("%s = %d\n", azColName[0], val);
+
 	char rmsg[MAX_STRING_LEN];
 	struct get_vital_msg vmsg;
 	int val;
@@ -32,8 +34,37 @@ static int callback(void *NotUsed, int argc, char **argv, char **azColName) {
 
 	//Get column value
 	val = atoi(argv[0]);
-	//print it
-	//printf("%s = %d\n", azColName[0], val);
+
+	//Calculate EWS
+	if (val <= 40) {
+		vmsg.ews = 3;
+
+	}
+
+	else if (val <= 50) {
+			vmsg.ews = 1;
+
+		}
+
+	else if (val <= 90) {
+			vmsg.ews = 0;
+
+		}
+
+	else if (val <= 110) {
+			vmsg.ews = 1;
+
+		}
+
+	else if (val <= 130) {
+			vmsg.ews = 2;
+
+		}
+	else {
+		vmsg.ews = 3;
+	}
+
+
 	//send it to early warning score server
 	vmsg.type = HEARTRATE;
 	vmsg.vital_data = val;
@@ -58,7 +89,6 @@ int main(int argc, char **argv) {
 
 	//Connect to channel
 	coid = name_open("heartrate", 0);
-
 	sqlite3_open("/tmp/eicu_v2_0_1_copy.sqlite3", &handle);
 
 

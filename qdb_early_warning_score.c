@@ -21,7 +21,10 @@
  *
  */
 
-
+static int calculate_ews(int hr_ews, int tmp_ews) {
+	int aggregate_score = hr_ews + tmp_ews;
+	return aggregate_score;
+}
 
 
 int main(void) {
@@ -41,7 +44,7 @@ int main(void) {
 	char *success_rsp = "success";
 
 	float temp;
-	int heartrate;
+	int heartrate, heart_ews, temp_ews, ews;
 
 	//create all channels
 	attach_temp = name_attach(NULL, "temp", 0);
@@ -68,6 +71,7 @@ int main(void) {
 		else if (rcvid > 0){
 			//get vital data, store it ... assume it's the correct data type (it should be)
 			temp = msg.vmsg.vital_data;
+			temp_ews = msg.vmsg.ews;
 			msgid = MsgReply(rcvid, 1, &success_rsp, sizeof(success_rsp));
 			if(msgid == -1){
 				perror("MsgReply()");
@@ -93,6 +97,7 @@ int main(void) {
 		else if (rcvid > 0){
 			//get vital data, store it ... assume it's the correct data type (it should be)
 			heartrate = msg.vmsg.vital_data;
+			heart_ews = msg.vmsg.ews;
 			msgid = MsgReply(rcvid, 1, &success_rsp, sizeof(success_rsp));
 			if(msgid == -1){
 				perror("MsgReply()");
@@ -100,7 +105,21 @@ int main(void) {
 			}
 		}
 
-		printf("temperature = %2.2f --- heartrate = %d\n", temp, heartrate);
+		ews = calculate_ews(heart_ews, temp_ews);
+		if (ews >= 7) {
+			printf("EWS is: %d, patient is High Risk!\n", ews);
+		}
+
+		else if (ews >= 7) {
+			printf("EWS is: %d, patient is Medium Risk\n", ews);
+		}
+
+		else {
+			printf("EWS is: %d, patient is Low Risk\n", ews);
+		}
+
+		printf("temperature = %f --- heartrate = %d\n", temp, heartrate);
+		printf("EWS = %d\n", ews);
 	}
 
 	//remove the name from the namespace and destroy the channel
