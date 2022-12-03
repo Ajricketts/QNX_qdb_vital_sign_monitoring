@@ -20,7 +20,7 @@
  * https://www.sqlite.org/rescode.html#ok
  *
  */
-#define NUMTHREADS      2
+#define NUMTHREADS      5
 
 //Globals
 char *num_of_retrievals = "2";
@@ -30,7 +30,7 @@ int respiration_coid;
 int sao2_coid;
 int blood_pressure_coid;
 
-
+void createPriorityThread(pthread_t thread_id[] ,int index, int priority, void (*func));
 void* temp_vital(void*);
 void* respiration_vital(void*);
 void* heartrate_vital(void*);
@@ -53,21 +53,14 @@ int main(int argc, char **argv) {
 	name_attach_t *attach_sao2;
 	name_attach_t *attach_blood_pressure;
 	char *success_rsp = "success";
-	int ews_temp;
-	int ews_heartrate;
-	int ews_respiration;
-	int ews_sao2;
-	int ews_blood_pressure;
-	int ews_total;
+	int ews_temp, ews_heartrate, ews_respiration;
+	int ews_sao2, ews_blood_pressure, ews_total;
 
 	//Vital Variables
 	int num_vitals = 3;
-	float temp;
-	float heartrate;
-	float respiration;
-	float sao2;
-	float blood_pressure_s;
-	float blood_pressure_d;
+	float temp, heartrate, respiration, sao2;
+	float blood_pressure_s, blood_pressure_d;
+
 
 	//create all channels
 	attach_temp = name_attach(NULL, "temp", 0);
@@ -77,57 +70,32 @@ int main(int argc, char **argv) {
 	attach_blood_pressure = name_attach(NULL, "bloodpressure", 0);
 
 	//Setting up the threads for each vital sign
-	pthread_t threads[NUMTHREADS];
+	pthread_t thread_id[NUMTHREADS];
 
-	//Get sched and prioirities set
-	struct sched_param schedparam1;
-	pthread_attr_t attr1;
-	schedparam1.sched_priority = 5;
-	pthread_attr_init(&attr1);
-	pthread_attr_setinheritsched(&attr1, PTHREAD_EXPLICIT_SCHED);
-	pthread_attr_setschedpolicy(&attr1, SCHED_RR);
-	pthread_attr_setschedparam(&attr1, &schedparam1);
+	// Create threads 1-5 with correct priorities
+	for (int i = 0; i < NUMTHREADS; i++) {
+		switch (i) {
+		case 0:
+				createPriorityThread(thread_id, i, 5, temp_vital);
+				break;
 
-	struct sched_param schedparam2;
-	pthread_attr_t attr2;
-	schedparam2.sched_priority = 5;
-	pthread_attr_init(&attr2);
-	pthread_attr_setinheritsched(&attr2, PTHREAD_EXPLICIT_SCHED);
-	pthread_attr_setschedpolicy(&attr2, SCHED_RR);
-	pthread_attr_setschedparam(&attr2, &schedparam2);
+		case 1:
+				createPriorityThread(thread_id, i, 5, heartrate_vital);
+				break;
 
-	struct sched_param schedparam3;
-	pthread_attr_t attr3;
-	schedparam3.sched_priority = 5;
-	pthread_attr_init(&attr3);
-	pthread_attr_setinheritsched(&attr3, PTHREAD_EXPLICIT_SCHED);
-	pthread_attr_setschedpolicy(&attr3, SCHED_RR);
-	pthread_attr_setschedparam(&attr3, &schedparam3);
+		case 2:
+				createPriorityThread(thread_id, i, 5, respiration_vital);
+				break;
 
-	struct sched_param schedparam4;
-	pthread_attr_t attr4;
-	schedparam4.sched_priority = 5;
-	pthread_attr_init(&attr4);
-	pthread_attr_setinheritsched(&attr4, PTHREAD_EXPLICIT_SCHED);
-	pthread_attr_setschedpolicy(&attr4, SCHED_RR);
-	pthread_attr_setschedparam(&attr4, &schedparam4);
+		case 3:
+				createPriorityThread(thread_id, i, 5, sao2_vital);
+				break;
 
-	struct sched_param schedparam5;
-	pthread_attr_t attr5;
-	schedparam5.sched_priority = 5;
-	pthread_attr_init(&attr5);
-	pthread_attr_setinheritsched(&attr5, PTHREAD_EXPLICIT_SCHED);
-	pthread_attr_setschedpolicy(&attr5, SCHED_RR);
-	pthread_attr_setschedparam(&attr5, &schedparam5);
-
-
-	pthread_create(&threads[0], &attr1, temp_vital, NULL);
-	pthread_create(&threads[1], &attr2, heartrate_vital, NULL);
-	pthread_create(&threads[2], &attr3, respiration_vital, NULL);
-	pthread_create(&threads[3], &attr4, sao2_vital, NULL);
-	pthread_create(&threads[4], &attr5, blood_pressure_vital, NULL);
-
-
+		case 4:
+				createPriorityThread(thread_id, i, 5, blood_pressure_vital);
+				break;
+		}
+	}
 
 
     //the server should keep receiving, processing and replying to messages
@@ -289,7 +257,7 @@ int main(int argc, char **argv) {
 
     for (int i = 0; i < NUMTHREADS; i++) {
         void *status;
-        if(pthread_join(threads[i], &status) != EOK){
+        if(pthread_join(thread_id[i], &status) != EOK){
         	printf("error joining\n");
         	exit(-1);
         }
@@ -303,6 +271,22 @@ int main(int argc, char **argv) {
 //METHODS
 //**************
 //**************
+
+void createPriorityThread(pthread_t thread_id[] ,int index, int priority, void (*func)) {
+	pthread_attr_t attr;
+	struct sched_param param; //Structure that describes scheduling parameters
+
+	// Initialize attr structure and use its scheduling policy
+	pthread_attr_init( &attr );
+	pthread_attr_setinheritsched(&attr, PTHREAD_EXPLICIT_SCHED);
+
+	// Set the scheduling parameters, policy, and priority
+	param.sched_priority = priority;
+	pthread_attr_setschedparam (&attr, &param);
+	pthread_attr_setschedpolicy (&attr, SCHED_RR);
+
+	pthread_create (&thread_id[index], &attr, func, NULL); // Create the thread
+}
 
 //Calculate early warning score
 int calculate_ews(int hr_ews, int tmp_ews, int resp_ews, int sao2_ews, int bp_ews) {
