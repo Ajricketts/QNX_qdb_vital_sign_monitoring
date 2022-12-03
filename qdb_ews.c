@@ -297,13 +297,38 @@ int calculate_ews(int hr_ews, int tmp_ews, int resp_ews, int sao2_ews, int bp_ew
 //Callback - temp
 static int callback_temp(void *NotUsed, int argc, char **argv, char **azColName) {
 	char rmsg[MAX_STRING_LEN];
-	struct get_vital_msg vmsg;
+	struct get_vital_msg_ews vmsg;
 	float val;
 	long msg_send_id;
 
 	//Get column value
 	val = atof(argv[0]);
-	//TODO: calculate temp ews
+
+
+	//Calculate EWS
+		if (val <= 35.0) {
+			vmsg.ews = 3;
+
+		}
+
+		else if (val <= 36.0) {
+				vmsg.ews = 1;
+
+			}
+
+		else if (val <= 38.0) {
+				vmsg.ews = 0;
+
+			}
+
+		else if (val <= 39.0) {
+				vmsg.ews = 1;
+
+			}
+
+		else {
+			vmsg.ews = 2;
+		}
 
 	//Send it to EWS calculator
 	vmsg.type = TEMPERATURE;
@@ -324,13 +349,42 @@ static int callback_temp(void *NotUsed, int argc, char **argv, char **azColName)
 //Callback - heartrate
 static int callback_hr(void *NotUsed, int argc, char **argv, char **azColName) {
 	char rmsg[MAX_STRING_LEN];
-	struct get_vital_msg vmsg;
+	struct get_vital_msg_ews vmsg;
 	float val;
 	long msg_send_id;
 
 	//Get column value
 	val = atof(argv[0]);
-	//TODO: calculate heartrate ews
+
+	//Calculate EWS
+		if (val <= 40) {
+			vmsg.ews = 3;
+
+		}
+
+		else if (val <= 50) {
+				vmsg.ews = 1;
+
+			}
+
+		else if (val <= 90) {
+				vmsg.ews = 0;
+
+			}
+
+		else if (val <= 110) {
+				vmsg.ews = 1;
+
+			}
+
+		else if (val <= 130) {
+				vmsg.ews = 2;
+
+			}
+		else {
+			vmsg.ews = 3;
+		}
+
 
 	//Send it to EWS calculator
 	vmsg.type = HEARTRATE;
@@ -351,13 +405,36 @@ static int callback_hr(void *NotUsed, int argc, char **argv, char **azColName) {
 //Callback - resp
 static int callback_resp(void *NotUsed, int argc, char **argv, char **azColName) {
 	char rmsg[MAX_STRING_LEN];
-	struct get_vital_msg vmsg;
+	struct get_vital_msg_ews vmsg;
 	float val;
 	long msg_send_id;
 
 	//Get column value
 	val = atof(argv[0]);
-	//TODO: calculate resp ews
+
+	//Calculate Respiration EWS
+		if (val <= 8) {
+			vmsg.ews = 3;
+
+		}
+
+		else if (val <= 11) {
+				vmsg.ews = 1;
+
+			}
+
+		else if (val <= 20) {
+				vmsg.ews = 0;
+
+			}
+
+		else if (val <= 24) {
+				vmsg.ews = 2;
+
+			}
+		else {
+			vmsg.ews = 3;
+		}
 
 	//Send it to EWS calculator
 	vmsg.type = RESPIRATION;
@@ -378,13 +455,33 @@ static int callback_resp(void *NotUsed, int argc, char **argv, char **azColName)
 //Callback - sao2
 static int callback_sao2(void *NotUsed, int argc, char **argv, char **azColName) {
 	char rmsg[MAX_STRING_LEN];
-	struct get_vital_msg vmsg;
+	struct get_vital_msg_ews vmsg;
 	float val;
 	long msg_send_id;
 
 	//Get column value
 	val = atof(argv[0]);
 	//TODO: calculate sao2 ews
+
+	//Calculate SAO2 EWS
+		if (val <= 91) {
+			vmsg.ews = 3;
+
+		}
+
+		else if (val <= 93) {
+				vmsg.ews = 2;
+
+			}
+
+		else if (val <= 95) {
+				vmsg.ews = 1;
+
+			}
+
+		else {
+			vmsg.ews = 0;
+		}
 
 	//Send it to EWS calculator
 	vmsg.type = SAO2;
@@ -405,7 +502,7 @@ static int callback_sao2(void *NotUsed, int argc, char **argv, char **azColName)
 //Callback - bp
 static int callback_bp(void *NotUsed, int argc, char **argv, char **azColName) {
 	char rmsg[MAX_STRING_LEN];
-	struct get_vital_msg vmsg;
+	struct get_vital_msg_ews vmsg;
 	float systolic, diastolic;
 	long msg_send_id;
 
@@ -413,6 +510,31 @@ static int callback_bp(void *NotUsed, int argc, char **argv, char **azColName) {
 	systolic = atof(argv[0]);
 	diastolic = atof(argv[1]);
 	//TODO: calculate bloodpressure ews
+
+	//Calculate Systolic Blood Pressure EWS
+		if (systolic <= 90) {
+			vmsg.ews = 3;
+
+		}
+
+		else if (systolic <= 100) {
+				vmsg.ews = 2;
+
+			}
+
+		else if (systolic <= 110) {
+				vmsg.ews = 1;
+
+			}
+
+		else if (systolic <= 219) {
+				vmsg.ews = 0;
+
+			}
+
+		else {
+			vmsg.ews = 3;
+		}
 
 	//Send it to EWS calculator
 	vmsg.type = BLOODPRESSURE;
